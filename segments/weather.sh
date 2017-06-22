@@ -4,13 +4,9 @@
 update_period=600
 
 TMUX_POWERLINE_SEG_WEATHER_DATA_PROVIDER_DEFAULT="yahoo"
-TMUX_POWERLINE_SEG_WEATHER_UNIT_DEFAULT="c"
+TMUX_POWERLINE_SEG_WEATHER_UNIT_DEFAULT="f"
 TMUX_POWERLINE_SEG_WEATHER_UPDATE_PERIOD_DEFAULT="600"
-if shell_is_bsd; then
-	TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT="/usr/local/bin/grep"
-else
-	TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT="grep"
-fi
+TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT="grep"
 
 
 generate_segmentrc() {
@@ -28,7 +24,7 @@ export TMUX_POWERLINE_SEG_WEATHER_GREP="${TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAUL
 # 1. Go to Yahoo weather http://weather.yahoo.com/
 # 2. Find the weather for you location
 # 3. Copy the last numbers in that URL. e.g. "http://weather.yahoo.com/united-states/california/newport-beach-12796587/" has the numbers "12796587"
-export TMUX_POWERLINE_SEG_WEATHER_LOCATION=""
+export TMUX_POWERLINE_SEG_WEATHER_LOCATION="12799045"
 EORC
 	echo "$rccontents"
 }
@@ -96,8 +92,8 @@ __yahoo_weather() {
 			gnugrep="${TMUX_POWERLINE_SEG_WEATHER_GREP}"
 
 			# <yweather:units temperature="F" distance="mi" pressure="in" speed="mph"/>
-			unit=$(echo "$weather_data" | "$gnugrep" -Zo "<yweather:units [^<>]*/>" | sed 's/.*temperature="\([^"]*\)".*/\1/')
-			condition=$(echo "$weather_data" | "$gnugrep" -Zo "<yweather:condition [^<>]*/>")
+			unit=$(echo "$weather_data" | grep -Zo "<yweather:units [^<>]*/>" | sed 's/.*temperature="\([^"]*\)".*/\1/')
+			condition=$(echo "$weather_data" | grep -Zo "<yweather:condition [^<>]*/>")
 			# <yweather:condition  text="Clear"  code="31"  temp="66"  date="Mon, 01 Oct 2012 8:00 pm CST" />
 			degree=$(echo "$condition" | sed 's/.*temp="\([^"]*\)".*/\1/')
 			condition=$(echo "$condition" | sed 's/.*text="\([^"]*\)".*/\1/')
@@ -108,8 +104,8 @@ __yahoo_weather() {
 			else
 				date_arg='-d'
 			fi
-			sunrise=$(date ${date_arg}"$(echo "$weather_data" | "$gnugrep" "yweather:astronomy" | sed 's/^\(.*\)sunset.*/\1/' | sed 's/^.*sunrise="\(.*m\)".*/\1/')" +%H%M)
-			sunset=$(date ${date_arg}"$(echo "$weather_data" | "$gnugrep" "yweather:astronomy" | sed 's/^.*sunset="\(.*m\)".*/\1/')" +%H%M)
+			sunrise=$(date ${date_arg}"$(echo "$weather_data" | grep "yweather:astronomy" | sed 's/^\(.*\)sunset.*/\1/' | sed 's/^.*sunrise="\(.*m\)".*/\1/')" +%H%M)
+			sunset=$(date ${date_arg}"$(echo "$weather_data" | grep "yweather:astronomy" | sed 's/^.*sunset="\(.*m\)".*/\1/')" +%H%M)
 		elif [ -f "${tmp_file}" ]; then
 			__read_tmp_file
 		fi
